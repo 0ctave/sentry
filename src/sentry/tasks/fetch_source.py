@@ -22,6 +22,7 @@ from sentry.constants import SOURCE_FETCH_TIMEOUT, MAX_CULPRIT_LENGTH
 from sentry.utils.cache import cache
 from sentry.utils.sourcemaps import sourcemap_to_index, find_source
 from sentry.utils.strings import truncatechars
+from django.conf import settings
 
 
 BAD_SOURCE = -1
@@ -117,7 +118,15 @@ def fetch_url_content(url):
     import sentry
 
     try:
-        opener = urllib2.build_opener()
+        password_mgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
+
+        username = settings.SOURCE_MAP_USERNAME
+        password = settings.SOURCE_MAP_PASSWORD
+
+        password_mgr.add_password(None, url, username, password)
+
+        handler = urllib2.HTTPBasicAuthHandler(password_mgr)
+        opener = urllib2.build_opener(handler)
         opener.addheaders = [
             ('Accept-Encoding', 'gzip'),
             ('User-Agent', 'Sentry/%s' % sentry.VERSION),

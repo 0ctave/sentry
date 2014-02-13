@@ -137,9 +137,14 @@ EMAIL_USE_TLS = False
 # The email address to send on behalf of
 SERVER_EMAIL = 'root@localhost'
 
+
 ###########
 ## etc. ##
 ###########
+
+#username and password for protected with basic auth sources
+SOURCE_MAP_USERNAME = ""
+SOURCE_MAP_PASSWORD = ""
 
 # If this file ever becomes compromised, it's important to regenerate your SECRET_KEY
 # Changing this value will result in all current sessions being invalidated
