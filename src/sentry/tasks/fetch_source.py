@@ -16,7 +16,7 @@ import base64
 from os.path import splitext
 from collections import namedtuple
 from simplejson import JSONDecodeError
-from urlparse import urljoin, urlsplit
+from urlparse import urljoin, urlsplit, urlparse
 
 from sentry.constants import SOURCE_FETCH_TIMEOUT, MAX_CULPRIT_LENGTH
 from sentry.utils.cache import cache
@@ -118,15 +118,20 @@ def fetch_url_content(url):
     import sentry
 
     try:
-        password_mgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
+        host = urlparse(url).netloc
 
-        username = settings.SOURCE_MAP_USERNAME
-        password = settings.SOURCE_MAP_PASSWORD
+        if host in settings.AUTH_BASIC:
+            password_mgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
 
-        password_mgr.add_password(None, url, username, password)
+            username = settings.AUTH_BASIC[host]['username']
+            password = settings.AUTH_BASIC[host]['password']
+            password_mgr.add_password(None, url, username, password)
 
-        handler = urllib2.HTTPBasicAuthHandler(password_mgr)
-        opener = urllib2.build_opener(handler)
+            handler = urllib2.HTTPBasicAuthHandler(password_mgr)
+            opener = urllib2.build_opener(handler)
+        else:
+            opener = urllib2.build_opener()
+
         opener.addheaders = [
             ('Accept-Encoding', 'gzip'),
             ('User-Agent', 'Sentry/%s' % sentry.VERSION),
